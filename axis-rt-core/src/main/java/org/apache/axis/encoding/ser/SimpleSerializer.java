@@ -34,6 +34,8 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 /**
  * Serializer for primitives and anything simple whose value is obtained with toString()
@@ -127,6 +129,8 @@ public class SimpleSerializer implements SimpleValueSerializer {
             }
         } else if (value instanceof QName) {
             return context.qName2String((QName)value);
+        } else if (value instanceof BigDecimal) {
+        	return toBigDecimalString((BigDecimal) value);
         }
 
         if (propertyDescriptor != null && !(value instanceof SimpleType)) {
@@ -141,7 +145,15 @@ public class SimpleSerializer implements SimpleValueSerializer {
         return value.toString();
     }
 
-    private Attributes getObjectAttributes(Object value,
+    private String toBigDecimalString(BigDecimal value) {
+		try {
+			Method toPlainString = BigDecimal.class.getMethod("toPlainString", null);
+			return (String) toPlainString.invoke(value, null);
+		} catch (Exception e) {
+			return value.toString();
+		}
+	}
+	private Attributes getObjectAttributes(Object value,
                                            Attributes attributes,
                                            SerializationContext context) {
         if (typeDesc != null && !typeDesc.hasAttributes())
